@@ -1,14 +1,15 @@
 require('dotenv').config()
 
-console.log('Loaded URI:', process.env.MONGODB_URI);
 
 const express = require("express");
+const simplifyRoutes = require('./routes/simplifyRoutes');
 const mongoose = require("mongoose");
 const app = express();
 const cors = require("cors");
 
 app.use(cors())
-app.use(express.json());   
+app.use(express.json()); 
+app.use('/api', simplifyRoutes);  
 const PORT = 5000;
 
 app.listen(PORT, () => {
