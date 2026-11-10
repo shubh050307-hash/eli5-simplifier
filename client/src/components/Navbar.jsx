@@ -1,6 +1,6 @@
-import { GitFork, Clock, LayoutGrid, Maximize2 } from 'lucide-react';
+import { GitFork, Clock } from 'lucide-react';
 
-export default function Navbar({ viewMode, setViewMode, onHistoryOpen }) {
+export default function Navbar({ onHistoryOpen }) {
   return (
     <header style={{ position:'sticky', top:'12px', zIndex:50, padding:'0 16px', marginBottom:'4px' }}>
       <nav style={{
@@ -36,32 +36,6 @@ export default function Navbar({ viewMode, setViewMode, onHistoryOpen }) {
               display: 'none',
             }} className="sm:inline">v2.4 ENGINE</span>
           </div>
-        </div>
-
-        {/* Center — View switcher */}
-        <div style={{
-          display:'flex', alignItems:'center', gap:'2px',
-          padding:'3px', borderRadius:'11px',
-          background:'rgba(255,255,255,0.04)',
-          border:'1px solid rgba(255,255,255,0.07)',
-        }}>
-          {[
-            { v:'bento', icon:<LayoutGrid size={13}/>, label:'Tri-Column' },
-            { v:'focus', icon:<Maximize2  size={13}/>, label:'Focus' },
-          ].map(({v,icon,label}) => (
-            <button key={v} onClick={() => setViewMode(v)} style={{
-              display:'flex', alignItems:'center', gap:'6px',
-              padding:'5px 12px', borderRadius:'9px', border:'none', cursor:'pointer',
-              fontSize:'12px', fontWeight:500,
-              background: viewMode===v ? 'rgba(255,255,255,0.10)' : 'transparent',
-              color: viewMode===v ? '#F4F4F6' : '#A1A1AA',
-              boxShadow: viewMode===v ? 'inset 0 1px 0 0 rgba(255,255,255,0.12)' : 'none',
-              transition:'all 0.15s',
-            }}>
-              {icon}
-              <span style={{ display: 'none' }} className="sm:inline">{label}</span>
-            </button>
-          ))}
         </div>
 
         {/* Right — Actions */}

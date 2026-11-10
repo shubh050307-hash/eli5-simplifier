@@ -1,45 +1,46 @@
 # ELI5 Simplifier
 
-ELI5 Simplifier is an AI-powered web application that turns complex questions and topics into clear explanations for three audiences:
+ELI5 Simplifier is a lightweight AI learning companion. Enter a complex topic, choose how deeply you want it explained, and receive:
 
-- **5-year-old:** simple words, short sentences, and relatable analogies
-- **Teenager:** plain language, practical examples, and context
-- **Adult / expert:** precise technical details and structured reasoning
+- A level-appropriate explanation
+- A relevant real-world example
+- Three to five key takeaways
+- A three-question knowledge-check quiz
 
-The application uses a React frontend, an Express backend, Groq for AI-generated explanations, and MongoDB for storing generated simplifications.
+The app keeps recent queries in the browser, so it does not require user accounts or cloud-synchronized history.
 
 ## Features
 
-- Generate three explanation levels from one question.
-- View explanations in a responsive, card-based interface.
-- Copy explanations to the clipboard.
-- Read explanations aloud with the browser Speech Synthesis API.
-- Export explanations as Markdown files.
-- Keep the latest 20 queries in browser local storage.
-- Reopen previous queries from the history drawer.
-- Clear saved local history.
-- Display demo responses when the backend request fails or times out.
-- Persist successful explanations to MongoDB.
+- **Three explanation levels:** ELI5, Teen, and Expert.
+- **Structured educational output:** explanation, example, takeaways, and quiz.
+- **Interactive quiz:** answer selection, immediate feedback, explanations, score, and retry.
+- **Local history:** the latest 20 successful queries are stored in `localStorage`.
+- **Copy, read aloud, and Markdown export** for generated content.
+- **Clear loading and error states** with retry actions.
+- **Safe Markdown rendering:** AI text is rendered with `react-markdown` and raw HTML is disabled.
+- **Responsive dark UI:** preserves the original glassmorphism and ambient visual style.
+- **Server-side AI integration:** the Groq API key never enters the frontend bundle.
 
-## Technology Stack
+## Stack
 
 ### Frontend
 
-- React 19
+- React
 - Vite
 - Tailwind CSS
 - Framer Motion
+- React Markdown
 - Lucide React
 
 ### Backend
 
 - Node.js
-- Express 5
+- Express
 - Groq SDK
-- Mongoose
-- MongoDB
 - CORS
 - dotenv
+
+MongoDB and Mongoose are intentionally not used. Browser local storage is sufficient for this project's recent-query history.
 
 ## Project Structure
 
@@ -47,27 +48,35 @@ The application uses a React frontend, an Express backend, Groq for AI-generated
 eli5-simplifier/
 ├── client/
 │   ├── src/
-│   │   ├── components/       # UI components
-│   │   ├── lib/              # Demo data and browser utilities
-│   │   └── App.jsx           # Main application flow
+│   │   ├── components/
+│   │   │   ├── HeroSection.jsx
+│   │   │   ├── ResultsSection.jsx
+│   │   │   └── HistoryDrawer.jsx
+│   │   ├── lib/
+│   │   │   └── utils.js
+│   │   └── App.jsx
 │   └── package.json
 ├── server/
-│   ├── controllers/          # AI generation logic
-│   ├── models/               # MongoDB schemas
-│   ├── routes/               # Express API routes
-│   ├── .env                 # Local secrets; do not commit
-│   └── package.json
+│   ├── controllers/
+│   │   └── simplifyController.js
+│   ├── middleware/
+│   │   └── errorHandler.js
+│   ├── routes/
+│   │   └── simplifyRoutes.js
+│   ├── services/
+│   │   └── groqService.js
+│   ├── .env
+│   └── server.js
 └── README.md
 ```
 
 ## Requirements
 
-- Node.js 18 or newer
+- Node.js 18+
 - npm
 - A Groq API key
-- A MongoDB connection string
 
-## Installation
+## Setup
 
 Install backend dependencies:
 
@@ -83,20 +92,23 @@ cd "/Users/shuubhgupta/ELI5 Simplifier/eli5-simplifier/client"
 npm install
 ```
 
-## Environment Configuration
-
-Create or update `server/.env`:
+Create `server/.env`:
 
 ```env
 GROQ_API_KEY=your_groq_api_key
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/eli5
 ```
 
-Do not commit real API keys, passwords, or connection strings. If a MongoDB username or password contains special characters, URL-encode them before placing them in the URI.
+Optional frontend origin configuration:
 
-## Running the Application
+```env
+CLIENT_URL=https://your-frontend.example.com
+```
 
-Start the backend in one terminal:
+Never commit `.env` or expose the Groq key through a `VITE_*` variable.
+
+## Run Locally
+
+Start the backend:
 
 ```bash
 cd "/Users/shuubhgupta/ELI5 Simplifier/eli5-simplifier/server"
@@ -105,7 +117,7 @@ node server.js
 
 The backend runs at `http://localhost:5000`.
 
-Start the frontend in a second terminal:
+In a second terminal, start the frontend:
 
 ```bash
 cd "/Users/shuubhgupta/ELI5 Simplifier/eli5-simplifier/client"
@@ -114,11 +126,13 @@ npm run dev
 
 Open the Vite URL shown in the terminal, usually `http://localhost:5173`.
 
-The frontend sends requests to:
+For local development, Vite proxies `/api` requests to the backend. For an independently deployed frontend, set the frontend variable before building:
 
-```text
-http://localhost:5000/api/simplify/all
+```env
+VITE_API_URL=https://your-backend.example.com
 ```
+
+When `VITE_API_URL` is unset, the frontend uses the current origin and the Vite development proxy handles local API requests.
 
 ## API
 
@@ -128,121 +142,90 @@ http://localhost:5000/api/simplify/all
 GET /
 ```
 
-Successful response:
-
 ```json
-{
-  "status": "ok"
-}
+{ "status": "ok" }
 ```
 
-### Generate all explanations
-
-```http
-POST /api/simplify/all
-Content-Type: application/json
-```
-
-Request body:
-
-```json
-{
-  "text": "Explain how gravity works",
-  "inputType": "general"
-}
-```
-
-Response:
-
-```json
-{
-  "eli5": "An explanation for a curious 5-year-old.",
-  "teen": "An explanation for a teenager.",
-  "expert": "A technical explanation for an expert reader."
-}
-```
-
-The `text` field is required and is limited to 5,000 characters. Supported `inputType` values are `general`, `legal`, `medical`, and `technical`.
-
-Example request with cURL:
-
-```bash
-curl -X POST http://localhost:5000/api/simplify/all \
-  -H "Content-Type: application/json" \
-  -d '{"text":"Explain how gravity works","inputType":"general"}'
-```
-
-### Generate one explanation
+### Generate an explanation
 
 ```http
 POST /api/simplify
 Content-Type: application/json
 ```
 
-Request body:
+Request:
 
 ```json
 {
-  "text": "Explain how gravity works",
-  "level": "eli5",
-  "inputType": "general"
+  "text": "Explain artificial intelligence",
+  "level": "teen"
 }
 ```
 
-Supported `level` values are `eli5`, `teen`, and `expert`.
+Supported levels are `eli5`, `teen`, and `expert`. Input is limited to 5,000 characters.
 
-## Data Storage
+Successful response:
 
-The browser stores recent query results under the `eli5_history` local storage key and keeps up to 20 entries.
+```json
+{
+  "success": true,
+  "data": {
+    "topic": "Artificial Intelligence",
+    "level": "teen",
+    "explanation": "Explanation in Markdown...",
+    "example": "A relevant real-world example...",
+    "keyTakeaways": [
+      "First important point",
+      "Second important point",
+      "Third important point"
+    ],
+    "quiz": [
+      {
+        "question": "What does AI learn from?",
+        "options": ["Data", "Gravity", "Weather", "Passwords"],
+        "correctAnswer": 0,
+        "explanation": "AI systems learn patterns from data."
+      }
+    ]
+  }
+}
+```
 
-When MongoDB is configured, each generated explanation is stored as a `Simplification` document with:
+The API always creates one explanation for the selected level; it does not generate unused levels.
 
-- Original text
-- Explanation level
-- Simplified text
-- Input type
-- Creation timestamp
+Example:
 
-## Troubleshooting
+```bash
+curl -X POST http://localhost:5000/api/simplify \
+  -H "Content-Type: application/json" \
+  -d '{"text":"Explain artificial intelligence","level":"teen"}'
+```
 
-### The frontend says "Something went wrong"
+The endpoint validates empty input, input length, explanation level, AI configuration, rate limits, and the structure of the AI response. Errors return a safe JSON message without stack traces or credentials.
 
-1. Confirm the backend is running on port `5000`.
-2. Check the backend terminal for Groq or MongoDB errors.
-3. Confirm `GROQ_API_KEY` is present in `server/.env`.
-4. Confirm the configured Groq model is available to your API key.
-5. Confirm the frontend is calling `http://localhost:5000`.
-
-If the backend is unavailable, the frontend displays a local demo response instead of leaving the results area empty.
-
-### MongoDB connection errors
-
-Check that:
-
-- `MONGODB_URI` exists in `server/.env`.
-- The MongoDB cluster is running.
-- Your IP address is allowed in MongoDB network access settings.
-- The database username and password are correct.
-- Special characters in credentials are URL-encoded.
-
-MongoDB is used for persistence; AI generation still depends on the Groq API.
-
-## Development Commands
-
-### Frontend
+## Frontend Commands
 
 ```bash
 npm run dev       # Start the Vite development server
-npm run build     # Create a production build
-npm run preview   # Preview the production build
+npm run build     # Build the production bundle
+npm run preview   # Preview the production bundle
 npm run lint      # Run ESLint
 ```
 
-### Backend
+## Backend Command
 
 ```bash
-node server.js    # Start the Express server
+node server.js
 ```
+
+The backend applies a lightweight per-IP limit of 20 simplify requests per minute. Configure `CLIENT_URL` in production to restrict CORS to the deployed frontend.
+
+## Known Limitations
+
+- The AI response depends on Groq availability, quota, and model access.
+- Recent history is device- and browser-specific because it uses `localStorage`.
+- Read-aloud depends on browser Speech Synthesis support.
+- No authentication, cloud history, or user profiles are included by design.
 
 ## License
 
