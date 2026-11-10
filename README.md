@@ -96,13 +96,16 @@ Create `server/.env`:
 
 ```env
 GROQ_API_KEY=your_groq_api_key
+PORT=5000
 ```
 
-Optional frontend origin configuration:
+For production, configure the deployed frontend origin:
 
 ```env
 CLIENT_URL=https://your-frontend.example.com
 ```
+
+`PORT` defaults to `5000` locally and uses the hosting platform's assigned port when provided. `CLIENT_URL` may contain multiple comma-separated origins. In production, browser origins not listed in `CLIENT_URL` are rejected; if `CLIENT_URL` is missing, the server logs a warning and rejects browser origins.
 
 Never commit `.env` or expose the Groq key through a `VITE_*` variable.
 
@@ -212,13 +215,14 @@ npm run preview   # Preview the production bundle
 npm run lint      # Run ESLint
 ```
 
-## Backend Command
+## Backend Commands
 
 ```bash
-node server.js
+npm start         # Start the backend
+npm test          # Run the built-in Node.js test suite
 ```
 
-The backend applies a lightweight per-IP limit of 20 simplify requests per minute. Configure `CLIENT_URL` in production to restrict CORS to the deployed frontend.
+The backend applies a lightweight per-IP limit of 20 simplify requests per minute. Tests mock the Groq service and do not require production credentials.
 
 ## Known Limitations
 

@@ -89,6 +89,16 @@ function Quiz({ questions }) {
   );
 }
 
+function getQuizIdentity(results) {
+  if (results.id) return results.id;
+  return [
+    results.level,
+    results.query,
+    results.explanation,
+    JSON.stringify(results.quiz)
+  ].join(':');
+}
+
 export default function ResultsSection({ results, loading, error, level, onRetry, onNewQuery, onRegenerate, showToast }) {
   const [copied, setCopied] = useState(false);
   const [speaking, setSpeaking] = useState(false);
@@ -150,7 +160,7 @@ export default function ResultsSection({ results, loading, error, level, onRetry
         <ul className="takeaway-list mt-4">{results.keyTakeaways.map(item => <li key={item}><Check size={15} /> <span>{item}</span></li>)}</ul>
       </section>
 
-      <Quiz questions={results.quiz} />
+      <Quiz key={getQuizIdentity(results)} questions={results.quiz} />
 
       <div className="flex flex-wrap justify-center gap-2 pt-2">
         <button type="button" className="secondary-button" onClick={onRegenerate}><RefreshCw size={14} /> Regenerate</button>

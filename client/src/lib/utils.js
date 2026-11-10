@@ -48,6 +48,7 @@ export function stopSpeaking() {
 }
 
 export function formatTimeAgo(timestamp) {
+  if (!Number.isFinite(timestamp)) return 'Earlier';
   const diff = Date.now() - timestamp;
   const mins = Math.floor(diff / 60000);
   const hours = Math.floor(diff / 3600000);

@@ -20,13 +20,25 @@ function getClient() {
 }
 
 function parseResponse(content) {
+  if (typeof content !== 'string' || content.trim().length === 0) {
+    const error = new Error('The AI returned an invalid response.');
+    error.statusCode = 502;
+    error.code = 'AI_INVALID_RESPONSE';
+    throw error;
+  }
   const cleaned = content.trim().replace(/^```json\s*/i, '').replace(/\s*```$/, '');
   try {
     return JSON.parse(cleaned);
   } catch {
     const start = cleaned.indexOf('{');
     const end = cleaned.lastIndexOf('}');
-    if (start >= 0 && end > start) return JSON.parse(cleaned.slice(start, end + 1));
+    if (start >= 0 && end > start) {
+      try {
+        return JSON.parse(cleaned.slice(start, end + 1));
+      } catch {
+        // Fall through to the consistent invalid-response error below.
+      }
+    }
     const error = new Error('The AI returned an invalid response.');
     error.statusCode = 502;
     error.code = 'AI_INVALID_RESPONSE';
@@ -36,19 +48,21 @@ function parseResponse(content) {
 
 function validateResponse(data) {
   const hasText = (value) => typeof value === 'string' && value.trim().length > 0;
-  const validQuiz = Array.isArray(data.quiz) && data.quiz.length === 3 && data.quiz.every(question =>
+  const validQuiz = Array.isArray(data?.quiz) && data.quiz.length === 3 && data.quiz.every(question =>
+    question &&
     hasText(question.question) &&
     Array.isArray(question.options) &&
     question.options.length === 4 &&
     question.options.every(hasText) &&
     Number.isInteger(question.correctAnswer) &&
     question.correctAnswer >= 0 &&
-    question.correctAnswer < 4 &&
+    question.correctAnswer < question.options.length &&
     hasText(question.explanation)
   );
 
-  if (!hasText(data.topic) || !hasText(data.explanation) || !hasText(data.example) ||
+  if (!hasText(data?.topic) || !hasText(data.explanation) || !hasText(data.example) ||
       !Array.isArray(data.keyTakeaways) || data.keyTakeaways.length < 3 ||
+      data.keyTakeaways.length > 5 ||
       !data.keyTakeaways.every(hasText) || !validQuiz) {
     const error = new Error('The AI returned an incomplete response.');
     error.statusCode = 502;
@@ -58,7 +72,6 @@ function validateResponse(data) {
 
   return {
     topic: data.topic.trim(),
-    level: data.level,
     explanation: data.explanation.trim(),
     example: data.example.trim(),
     keyTakeaways: data.keyTakeaways.slice(0, 5).map(item => item.trim()),
@@ -109,7 +122,7 @@ ${text}`;
       error.code = 'AI_INVALID_RESPONSE';
       throw error;
     }
-    return validateResponse(parseResponse(content));
+    return { ...validateResponse(parseResponse(content)), level };
   } catch (error) {
     if (error.statusCode) throw error;
     if (error.status === 429 || error.code === 'rate_limit_exceeded') {
@@ -126,4 +139,4 @@ ${text}`;
   }
 }
 
-module.exports = { generateSimplification };
+module.exports = { generateSimplification, parseResponse, validateResponse };

@@ -1,4 +1,4 @@
-const { generateSimplification } = require('../services/groqService');
+const groqService = require('../services/groqService');
 
 const VALID_LEVELS = ['eli5', 'teen', 'expert'];
 const MAX_LENGTH = 5000;
@@ -25,7 +25,7 @@ exports.simplifyText = async (req, res, next) => {
   }
 
   try {
-    const data = await generateSimplification(text.trim(), level);
+    const data = await groqService.generateSimplification(text.trim(), level);
     return res.json({ success: true, data });
   } catch (error) {
     return next(error);

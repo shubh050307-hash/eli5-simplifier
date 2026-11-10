@@ -2,10 +2,13 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Clock, Trash2, X, Download } from 'lucide-react';
 import { formatTimeAgo, exportAsMarkdown, downloadMarkdown } from '../lib/utils';
 
+const LEVEL_LABELS = { eli5: 'ELI5', teen: 'Teen', expert: 'Expert' };
+
 export default function HistoryDrawer({ open, onClose, history, onLoad, onClear }) {
   const handleExport = (entry) => {
     const md = exportAsMarkdown(entry.query, entry);
-    downloadMarkdown(md, `eli5-${entry.query.slice(0,30).replace(/\s+/g,'-').toLowerCase()}.md`);
+    const filename = (entry.query || 'explanation').slice(0, 30).replace(/\s+/g, '-').toLowerCase();
+    downloadMarkdown(md, `eli5-${filename}.md`);
   };
 
   return (
@@ -98,20 +101,13 @@ export default function HistoryDrawer({ open, onClose, history, onLoad, onClear 
                       onMouseLeave={e => { e.currentTarget.style.background='rgba(255,255,255,0.02)'; e.currentTarget.style.borderColor='rgba(255,255,255,0.07)'; }}
                     >
                       <p className="clamp-2" style={{ fontSize:'13px', fontWeight:500, color:'#F4F4F6', marginBottom:'8px', lineHeight:1.45, paddingRight:'28px' }}>
-                        {entry.query}
+                        {entry.query || 'Untitled explanation'}
                       </p>
                       <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
                         <span style={{ fontFamily:'var(--font-mono)', fontSize:'9px', color:'#52525B' }}>{formatTimeAgo(entry.timestamp)}</span>
-                        <div style={{ display:'flex', gap:'4px' }}>
-                          {['eli5','teen','expert'].map(m => (
-                            <div key={m} style={{
-                              width:'5px', height:'5px', borderRadius:'50%',
-                              background: entry[m]
-                                ? m==='eli5' ? '#F59E0B' : m==='teen' ? '#38BDF8' : '#10B981'
-                                : 'rgba(255,255,255,0.08)',
-                            }}/>
-                          ))}
-                        </div>
+                        <span style={{ fontFamily:'var(--font-mono)', fontSize:'9px', color:'#A1A1AA' }}>
+                          {LEVEL_LABELS[entry.level] || 'Explanation'}
+                        </span>
                       </div>
                       <button
                         onClick={e => { e.stopPropagation(); handleExport(entry); }}

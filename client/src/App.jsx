@@ -17,6 +17,21 @@ function readHistory() {
   }
 }
 
+function normalizeHistoryEntry(entry) {
+  const legacyLevel = entry.level || (entry.eli5 ? 'eli5' : entry.teen ? 'teen' : entry.expert ? 'expert' : 'eli5');
+  if (entry.explanation && Array.isArray(entry.quiz)) {
+    return { ...entry, level: legacyLevel };
+  }
+  return {
+    ...entry,
+    level: legacyLevel,
+    explanation: entry[legacyLevel] || 'This older history entry does not contain a full explanation.',
+    example: entry.example || '',
+    keyTakeaways: Array.isArray(entry.keyTakeaways) ? entry.keyTakeaways : [],
+    quiz: Array.isArray(entry.quiz) ? entry.quiz : []
+  };
+}
+
 export default function App() {
   const [query, setQuery] = useState('');
   const [level, setLevel] = useState('eli5');
@@ -146,12 +161,13 @@ export default function App() {
         onClose={() => setHistoryOpen(false)}
         history={history}
         onLoad={(entry) => {
-          setQuery(entry.query);
-          setLevel(entry.level);
-          setResults(entry);
+          const normalizedEntry = normalizeHistoryEntry(entry);
+          setQuery(normalizedEntry.query || '');
+          setLevel(normalizedEntry.level);
+          setResults(normalizedEntry);
           setError(null);
           setHistoryOpen(false);
-          setAmbientMode(entry.level);
+          setAmbientMode(normalizedEntry.level);
         }}
         onClear={() => {
           setHistory([]);
