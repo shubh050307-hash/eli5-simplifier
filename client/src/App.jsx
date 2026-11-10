@@ -59,7 +59,7 @@ export default function App() {
   }, []);
 
   const handleSubmit = useCallback(async (submittedQuery = query, submittedLevel = level) => {
-    const text = submittedQuery.trim();
+    const text = typeof submittedQuery === 'string' ? submittedQuery.trim() : query.trim();
     if (!text) {
       showToast('Please enter a topic or question first.', 'error');
       inputRef.current?.focus();

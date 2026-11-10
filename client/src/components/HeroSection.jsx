@@ -92,7 +92,7 @@ export default function HeroSection({ query, setQuery, level, setLevel, onSubmit
             <div className="flex items-center gap-2 ml-auto">
               {query && <button type="button" className="icon-button" onClick={onClear} title="Clear input"><Eraser size={14} /></button>}
               <span className="text-[10px] font-mono text-[#52525B]">{query.length}/5000</span>
-              <button type="button" onClick={onSubmit} disabled={disabled || !query.trim()} className="primary-button">
+              <button type="button" onClick={() => onSubmit()} disabled={disabled || !query.trim()} className="primary-button">
                 {disabled ? 'Thinking…' : 'Explain'} <ArrowRight size={14} />
               </button>
             </div>
