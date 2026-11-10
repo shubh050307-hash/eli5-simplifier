@@ -113,6 +113,57 @@ export default function App() {
     window.setTimeout(() => inputRef.current?.focus(), 50);
   }, []);
 
+  const handleFollowUp = useCallback(async (question) => {
+    if (!results || !question.trim()) {
+      showToast('Enter a follow-up question first.', 'error');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setAmbientMode('loading');
+    try {
+      const response = await fetch(`${API_URL}/simplify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: question.trim(),
+          level: results.level || level,
+          context: {
+            topic: results.topic || results.query,
+            explanation: results.explanation,
+            example: results.example
+          }
+        }),
+        signal: AbortSignal.timeout(45000),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || !payload.success || !payload.data) {
+        throw new Error(payload.error || `Request failed (${response.status})`);
+      }
+
+      const entry = {
+        ...payload.data,
+        query: question.trim(),
+        timestamp: Date.now(),
+        id: crypto.randomUUID(),
+      };
+      setQuery(question.trim());
+      setLevel(entry.level);
+      setResults(entry);
+      saveHistory(entry);
+      setAmbientMode(entry.level);
+    } catch (requestError) {
+      const message = requestError.name === 'TimeoutError'
+        ? 'The follow-up took too long. Please try again.'
+        : requestError.message || 'Unable to answer the follow-up question.';
+      setError(message);
+      setAmbientMode(results.level || level);
+    } finally {
+      setLoading(false);
+    }
+  }, [level, results, saveHistory, showToast]);
+
   useEffect(() => {
     const onKeyDown = (event) => {
       if (event.target.matches('textarea, input')) return;
@@ -151,6 +202,7 @@ export default function App() {
               onRetry={() => handleSubmit(query, level)}
               onNewQuery={clearResults}
               onRegenerate={() => handleSubmit(query, level)}
+              onFollowUp={handleFollowUp}
               showToast={showToast}
             />
           </div>

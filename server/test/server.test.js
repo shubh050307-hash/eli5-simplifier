@@ -71,6 +71,27 @@ test('returns the selected level and structured data on success', async () => {
   assert.equal(payload.data.quiz.length, 3);
 });
 
+test('passes follow-up context to the AI service', async () => {
+  let receivedContext;
+  groqService.generateSimplification = async (text, level, context) => {
+    receivedContext = { text, level, context };
+    return { ...validData, topic: 'APIs follow-up', level };
+  };
+  const response = await request({
+    text: 'Can you give me another example?',
+    level: 'eli5',
+    context: { topic: 'APIs', explanation: validData.explanation }
+  });
+  assert.equal(response.status, 200);
+  assert.equal(receivedContext.context.topic, 'APIs');
+  assert.equal(receivedContext.text, 'Can you give me another example?');
+});
+
+test('rejects invalid follow-up context', async () => {
+  const response = await request({ text: 'Why?', level: 'eli5', context: { topic: 'APIs' } });
+  assert.equal(response.status, 400);
+});
+
 test('maps Groq failures to a safe API error', async () => {
   groqService.generateSimplification = async () => {
     const error = new Error('provider details');

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Check, Copy, Download, RefreshCw, RotateCcw, Volume2, VolumeX } from 'lucide-react';
+import { Check, Copy, Download, HelpCircle, RefreshCw, RotateCcw, Volume2, VolumeX } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { copyToClipboard, downloadMarkdown, exportAsMarkdown, speakText, stopSpeaking } from '../lib/utils';
 
@@ -99,13 +99,27 @@ function getQuizIdentity(results) {
   ].join(':');
 }
 
-export default function ResultsSection({ results, loading, error, level, onRetry, onNewQuery, onRegenerate, showToast }) {
+export default function ResultsSection({ results, loading, error, level, onRetry, onNewQuery, onRegenerate, onFollowUp, showToast }) {
   const [copied, setCopied] = useState(false);
   const [speaking, setSpeaking] = useState(false);
+  const [followUp, setFollowUp] = useState('');
+  const [followUpLoading, setFollowUpLoading] = useState(false);
 
   if (loading) return <div className="max-w-3xl mx-auto px-4 pb-16"><LoadingState /></div>;
   if (error) return <div className="max-w-3xl mx-auto px-4 pb-16"><ErrorState error={error} onRetry={onRetry} onNewQuery={onNewQuery} /></div>;
   if (!results) return null;
+
+  const submitFollowUp = async (event) => {
+    event.preventDefault();
+    if (!followUp.trim() || followUpLoading) return;
+    setFollowUpLoading(true);
+    try {
+      await onFollowUp(followUp);
+      setFollowUp('');
+    } finally {
+      setFollowUpLoading(false);
+    }
+  };
 
   const copy = async () => {
     await copyToClipboard(`${results.explanation}\n\nExample\n${results.example}\n\nKey takeaways\n${results.keyTakeaways.map(item => `- ${item}`).join('\n')}`);
@@ -152,6 +166,31 @@ export default function ResultsSection({ results, loading, error, level, onRetry
           <div className="section-kicker text-amber-300">Real-world example</div>
           <div className="card-prose mt-3"><ReactMarkdown>{results.example}</ReactMarkdown></div>
         </div>
+      </section>
+
+      <section className="glass-card p-5 sm:p-7">
+        <div className="flex items-center gap-2">
+          <HelpCircle size={16} className="text-sky-300" />
+          <div>
+            <div className="section-kicker">Keep learning</div>
+            <h2 className="section-title">Ask a follow-up question</h2>
+          </div>
+        </div>
+        <p className="text-sm mt-3">Ask about this explanation and the answer will use the current topic as context.</p>
+        <form onSubmit={submitFollowUp} className="mt-4 flex flex-col sm:flex-row gap-2">
+          <input
+            value={followUp}
+            onChange={(event) => setFollowUp(event.target.value)}
+            placeholder="Can you give me another example?"
+            maxLength={2000}
+            disabled={followUpLoading}
+            aria-label="Follow-up question"
+            className="flex-1 rounded-lg border border-white/[.1] bg-white/[.04] px-3 py-2 text-sm text-[#F4F4F6] outline-none placeholder:text-[#52525B] focus:border-sky-300/50"
+          />
+          <button type="submit" className="primary-button" disabled={followUpLoading || !followUp.trim()}>
+            {followUpLoading ? 'Asking…' : 'Ask'}
+          </button>
+        </form>
       </section>
 
       <section className="glass-card p-5 sm:p-7">

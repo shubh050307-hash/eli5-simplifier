@@ -14,6 +14,7 @@ The app keeps recent queries in the browser, so it does not require user account
 - **Three explanation levels:** ELI5, Teen, and Expert.
 - **Structured educational output:** explanation, example, takeaways, and quiz.
 - **Interactive quiz:** answer selection, immediate feedback, explanations, score, and retry.
+- **Contextual follow-ups:** ask another question about the current explanation without losing the selected learning level.
 - **Local history:** the latest 20 successful queries are stored in `localStorage`.
 - **Copy, read aloud, and Markdown export** for generated content.
 - **Clear loading and error states** with retry actions.
@@ -164,6 +165,21 @@ Request:
   "level": "teen"
 }
 ```
+
+Follow-up requests use the same endpoint and include the current explanation as context:
+
+```json
+{
+  "text": "Can you give me another example?",
+  "level": "eli5",
+  "context": {
+    "topic": "Artificial Intelligence",
+    "explanation": "The current generated explanation..."
+  }
+}
+```
+
+The backend validates follow-up context before sending it to Groq and returns the same structured response shape.
 
 Supported levels are `eli5`, `teen`, and `expert`. Input is limited to 5,000 characters.
 

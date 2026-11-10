@@ -79,10 +79,17 @@ function validateResponse(data) {
   };
 }
 
-async function generateSimplification(text, level) {
+async function generateSimplification(text, level, context) {
   if (!VALID_LEVELS.has(level)) throw new Error('Invalid explanation level.');
 
-  const prompt = `Explain the following topic for the ${level} audience.
+  const contextInstructions = context
+    ? `This is a follow-up question. Use the previous explanation as context, correct misunderstandings if needed, and answer the follow-up directly.
+Previous topic: ${context.topic}
+Previous explanation:
+${context.explanation}
+`
+    : '';
+  const prompt = `${contextInstructions}Explain the following topic for the ${level} audience.
 ${LEVEL_GUIDANCE[level]}
 Return only valid JSON with exactly these fields:
 {
@@ -102,7 +109,7 @@ Return only valid JSON with exactly these fields:
 }
 Create exactly three quiz questions. Do not reveal answers in the question text. Keep quiz difficulty appropriate for the audience.
 
-Topic:
+${context ? 'Follow-up question' : 'Topic'}:
 ${text}`;
 
   try {
