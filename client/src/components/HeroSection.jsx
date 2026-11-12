@@ -54,7 +54,7 @@ export default function HeroSection({ query, setQuery, level, setLevel, onSubmit
         </>
       )}
 
-      <div className="w-full max-w-3xl">
+      <div className={`w-full max-w-3xl ${hasResults ? '' : 'mt-24 sm:mt-32'}`}>
         <div className="glass-card overflow-hidden">
           <textarea
             ref={inputRef}
