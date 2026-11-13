@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ArrowRight, Atom, Brain, Dna, Eraser, TrendingUp } from 'lucide-react';
+import DotField from './DotField';
 
 const PLACEHOLDERS = [
   'Explain how transformer models work...',
@@ -40,21 +41,24 @@ export default function HeroSection({ query, setQuery, level, setLevel, onSubmit
   }, [placeholderIndex]);
 
   return (
-    <section className={`px-4 flex flex-col items-center ${hasResults ? 'pt-7 pb-5' : 'min-h-[calc(100vh-84px)] justify-center'}`}>
+    <section className={`hero-section px-4 flex flex-col items-center ${hasResults ? 'pt-7 pb-5' : 'min-h-[calc(100vh-84px)] justify-center'}`}>
+      {!hasResults && <DotField />}
       {!hasResults && (
         <>
-          <div className="status-badge"><span className="status-dot" /> AI learning companion</div>
-          <h1 className="text-center max-w-3xl text-5xl sm:text-6xl font-extrabold leading-tight tracking-[-0.04em] mb-5">
+          <div className="hero-content">
+            <div className="status-badge"><span className="status-dot" /> AI learning companion</div>
+            <h1 className="hero-heading text-center max-w-3xl text-5xl sm:text-6xl font-extrabold leading-tight tracking-[-0.04em] mb-5">
             <span className="grad-white">Complex ideas.</span><br />
             <span className="grad-muted">Simply explained.</span>
-          </h1>
-          <p className="text-center max-w-xl text-base sm:text-lg leading-7 mb-9">
-            Understand anything at your level with a clear explanation, a real-world example, key takeaways, and a quick quiz.
-          </p>
+            </h1>
+            <p className="text-center max-w-xl text-base sm:text-lg leading-7 mb-9">
+              Understand anything at your level with a clear explanation, a real-world example, key takeaways, and a quick quiz.
+            </p>
+          </div>
         </>
       )}
 
-      <div className={`w-full max-w-3xl ${hasResults ? '' : 'mt-24 sm:mt-32'}`}>
+      <div className={`hero-content w-full max-w-3xl ${hasResults ? '' : 'mt-24 sm:mt-32'}`}>
         <div className="glass-card overflow-hidden">
           <textarea
             ref={inputRef}
