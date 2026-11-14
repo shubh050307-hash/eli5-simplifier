@@ -41,17 +41,20 @@ export default function HeroSection({ query, setQuery, level, setLevel, onSubmit
   }, [placeholderIndex]);
 
   return (
-    <section className={`hero-section px-4 flex flex-col items-center ${hasResults ? 'pt-7 pb-5' : 'min-h-[calc(100vh-84px)] justify-center'}`}>
-            {!hasResults && (
-        <>
-          <div className="hero-content hero-intro">
-            <div className="status-badge"><span className="status-dot" /> AI learning companion</div>
-            <DotField />
-          </div>
-        </>
+    <>
+      {!hasResults && (
+        <div className="hero-scroll-track">
+          <section className="hero-section px-4 flex flex-col items-center min-h-[calc(100vh-84px)] justify-center">
+            <div className="hero-content hero-intro">
+              <div className="status-badge"><span className="status-dot" /> AI learning companion</div>
+              <DotField />
+            </div>
+          </section>
+        </div>
       )}
 
-      <div className={`hero-content w-full max-w-3xl ${hasResults ? '' : '-mt-8 sm:-mt-10'}`}>
+      <section aria-label="Ask a question" className={`relative z-10 px-4 flex flex-col items-center ${hasResults ? 'pt-7 pb-5' : 'pt-10 pb-12 sm:pb-16'}`}>
+      <div className="hero-content w-full max-w-3xl">
         <div className="glass-card overflow-hidden">
           <textarea
             ref={inputRef}
@@ -107,6 +110,7 @@ export default function HeroSection({ query, setQuery, level, setLevel, onSubmit
           ))}
         </div>
       )}
-    </section>
+      </section>
+    </>
   );
 }

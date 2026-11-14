@@ -42,7 +42,7 @@ body {
   background-color: var(--canvas);
   color: var(--text-primary);
   min-height: 100dvh;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 #root {
@@ -346,4 +346,19 @@ textarea:focus-visible, input:focus-visible { outline: none; }
   .level-option span { display: none; }
   .level-option { align-items: center; padding: 9px 6px; }
   .level-option strong { font-size: 11px; }
+}
+
+/* The hero occupies the viewport until gathering and the reading pause finish.
+   Subsequent sections begin outside this explicit scroll track. */
+.hero-scroll-track { height: calc(200svh - 84px); }
+.hero-scroll-track > .hero-section {
+  position: sticky;
+  top: 84px;
+  height: calc(100svh - 84px);
+  min-height: 0;
+}
+.hero-scroll-track .dot-field { height: min(520px, 65svh); }
+@media (prefers-reduced-motion: reduce) {
+  .hero-scroll-track { height: auto; }
+  .hero-scroll-track > .hero-section { position: relative; top: auto; }
 }

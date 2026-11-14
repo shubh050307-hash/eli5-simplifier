@@ -177,7 +177,7 @@ export default function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#070709] text-[#F4F4F6] relative overflow-x-hidden">
+    <div className="min-h-screen bg-[#070709] text-[#F4F4F6] relative overflow-x-clip">
       <AmbientBackground mode={ambientMode} loading={loading} />
       <Navbar onHistoryOpen={() => setHistoryOpen(true)} />
       <main className="relative z-10">

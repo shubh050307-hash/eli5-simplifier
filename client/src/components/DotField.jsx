@@ -2,7 +2,8 @@ import { useEffect, useRef } from 'react';
 
 // Motion adapted from Roman Vasnev's MIT-licensed Dot Field preview:
 // https://21st.dev/@romanvasnev/components/dot-field
-const HEADLINE = 'Complex ideas simply explained';
+const HEADLINE_LINES = ['Complex ideas', 'simply explained'];
+const HEADLINE = HEADLINE_LINES.join(' ');
 const FONT = '"Plus Jakarta Sans", sans-serif';
 
 export default function DotField() {
@@ -19,7 +20,7 @@ export default function DotField() {
     if (!ctx || !light) return undefined;
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
     let width, height, particles = [], started = 0, frame, resizeTimer, startTimer;
-    let active = true, visible = true, scatter = 0, lastScatter = 0, kick = 0;
+    let active = true, visible = true, scatter = 1, lastScatter = 1, kick = 0;
     let previousFrame = 0;
     const mouse = { x: 0, y: 0, on: false };
 
@@ -38,26 +39,16 @@ export default function DotField() {
       mask.height = height;
       const text = mask.getContext('2d', { willReadFrequently: true });
       let size = Math.min(width * .115, height * .2, 168);
-      let lines;
-      do {
-        text.font = `600 ${size}px ${FONT}`;
-        lines = [];
-        let line = '';
-        for (const word of HEADLINE.split(' ')) {
-          const next = line ? `${line} ${word}` : word;
-          if (line && text.measureText(next).width > width * .88) {
-            lines.push(line);
-            line = word;
-          } else line = next;
-        }
-        lines.push(line);
-        if (lines.length <= 3 && lines.every(line => text.measureText(line).width <= width * .92)) break;
-        size *= .9;
-      } while (size >= 28);
+      const lines = HEADLINE_LINES;
+      // Keep the same two lines on every screen, scaling to the wider line.
+      text.font = `600 ${size}px ${FONT}`;
+      const widest = Math.max(...lines.map(line => text.measureText(line).width));
+      size *= Math.min(1, width * .88 / widest);
+      text.font = `600 ${size}px ${FONT}`;
       text.textAlign = 'center';
       text.textBaseline = 'middle';
       text.letterSpacing = `${-size * .05}px`;
-      lines.forEach((line, i) => text.fillText(line, width / 2, height * .46 + (i - (lines.length - 1) / 2) * size * .98));
+      lines.forEach((line, i) => text.fillText(line, width / 2, height * .46 + (i - (lines.length - 1) / 2) * size * 1.18));
       const pixels = text.getImageData(0, 0, width, height).data;
       const targets = [];
       const step = Math.max(3, Math.round(size / 30));
@@ -85,7 +76,12 @@ export default function DotField() {
       }));
     };
     const scroll = () => {
-      scatter = Math.min(1, Math.max(0, -host.getBoundingClientRect().top / (window.innerHeight * .7)));
+      const track = host.closest('.hero-scroll-track');
+      const hero = host.closest('.hero-section');
+      // Finish gathering before the pinned hero releases into the next section.
+      const travel = Math.max(1, track.offsetHeight - hero.offsetHeight);
+      const progress = Math.min(1, Math.max(0, (84 - track.getBoundingClientRect().top) / (travel * .8)));
+      scatter = motion.matches ? 0 : 1 - progress * progress * (3 - 2 * progress);
     };
     const draw = (now) => {
       frame = requestAnimationFrame(draw);
@@ -100,16 +96,10 @@ export default function DotField() {
       light.fillStyle = '#3c2cff';
       for (const p of particles) {
         const letter = p.tx !== undefined;
-        const age = time - (p.delay || 0);
-        let x = p.gx, y = p.gy, spring = .06, flow = 0;
+        let x = p.gx, y = p.gy, spring = .09, flow = 0;
         if (letter) {
-          if (age > 0) {
-            const spread = Math.min(1, scatter * (.8 + p.delay * .6));
-            x = p.tx + (p.gx - p.tx) * spread;
-            y = p.ty + (p.gy - p.ty) * spread;
-            spring = Math.min(.09, .02 + age * .08);
-          }
-          flow = age > -1 ? Math.max(0, 1 - Math.max(0, age) * 1.4) : 0;
+          x = p.tx + (p.gx - p.tx) * scatter;
+          y = p.ty + (p.gy - p.ty) * scatter;
         }
         if (kick > .01) flow = Math.max(flow, Math.min(1, kick) * .9);
         if (motion.matches) {
@@ -136,7 +126,7 @@ export default function DotField() {
         }
         const alpha = Math.min(.5, .12 + (Math.abs(p.vx) + Math.abs(p.vy)) * .05);
         if (letter) {
-          const gathered = motion.matches ? 1 - scatter : Math.min(1, Math.max(0, age * 1.2)) * (1 - scatter);
+          const gathered = 1 - scatter;
           ctx.globalAlpha = (.34 + gathered * .6) * (1 - scatter) + alpha * scatter;
           const radius = 1 - scatter * .25;
           ctx.fillRect(p.x - radius, p.y - radius, radius * 2, radius * 2);
@@ -166,7 +156,7 @@ export default function DotField() {
       build();
       observer.observe(host);
       intersection.observe(host);
-      // Observe initial dimensions before starting the gathering animation.
+      // Scrolling controls gathering; elapsed time only animates the light sweep.
       startTimer = setTimeout(() => { started = performance.now(); scroll(); frame = requestAnimationFrame(draw); }, 180);
     });
     host.addEventListener('pointermove', move);
