@@ -1,166 +1,196 @@
 import { useEffect, useRef } from 'react';
 
-const DOT_SPACING = 22;
-const DOT_RADIUS = 1.05;
-const LENS_RADIUS = 180;
+// Motion adapted from Roman Vasnev's MIT-licensed Dot Field preview:
+// https://21st.dev/@romanvasnev/components/dot-field
+const HEADLINE = 'Complex ideas simply explained';
+const FONT = '"Plus Jakarta Sans", sans-serif';
 
-export default function DotField({ lines = ['Complex ideas.', 'Simply explained.'] }) {
+export default function DotField() {
+  const hostRef = useRef(null);
   const canvasRef = useRef(null);
-  const textLines = lines.join('|');
+  const glowRef = useRef(null);
 
   useEffect(() => {
+    const host = hostRef.current;
     const canvas = canvasRef.current;
-    if (!canvas) return undefined;
+    const glow = glowRef.current;
+    const ctx = canvas.getContext('2d');
+    const light = glow.getContext('2d');
+    if (!ctx || !light) return undefined;
+    const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let width, height, particles = [], started = 0, frame, resizeTimer, startTimer;
+    let active = true, visible = true, scatter = 0, lastScatter = 0, kick = 0;
+    let previousFrame = 0;
+    const mouse = { x: 0, y: 0, on: false };
 
-    const context = canvas.getContext('2d');
-    if (!context) return undefined;
-
-    let animationFrame;
-    let width = 0;
-    let height = 0;
-    let dots = [];
-    let textDots = [];
-    let pointerTarget = { x: -1000, y: -1000 };
-    let pointerPosition = { x: -1000, y: -1000 };
-    const renderedLines = textLines.split('|');
-
-    const resize = () => {
-      const bounds = canvas.getBoundingClientRect();
-      const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
-      width = bounds.width;
-      height = bounds.height;
-      canvas.width = width * pixelRatio;
-      canvas.height = height * pixelRatio;
-      context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
-
-      dots = [];
-      for (let y = DOT_SPACING / 2; y < height; y += DOT_SPACING) {
-        for (let x = DOT_SPACING / 2; x < width; x += DOT_SPACING) {
-          dots.push({ x, y, phase: Math.random() * Math.PI * 2 });
+    const build = () => {
+      width = Math.max(1, Math.round(host.clientWidth));
+      height = Math.max(1, Math.round(host.clientHeight));
+      const ratio = Math.min(2, window.devicePixelRatio || 1);
+      for (const layer of [canvas, glow]) {
+        layer.width = width * ratio;
+        layer.height = height * ratio;
+      }
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      light.setTransform(ratio, 0, 0, ratio, 0, 0);
+      const mask = document.createElement('canvas');
+      mask.width = width;
+      mask.height = height;
+      const text = mask.getContext('2d', { willReadFrequently: true });
+      let size = Math.min(width * .115, height * .2, 168);
+      let lines;
+      do {
+        text.font = `600 ${size}px ${FONT}`;
+        lines = [];
+        let line = '';
+        for (const word of HEADLINE.split(' ')) {
+          const next = line ? `${line} ${word}` : word;
+          if (line && text.measureText(next).width > width * .88) {
+            lines.push(line);
+            line = word;
+          } else line = next;
+        }
+        lines.push(line);
+        if (lines.length <= 3 && lines.every(line => text.measureText(line).width <= width * .92)) break;
+        size *= .9;
+      } while (size >= 28);
+      text.textAlign = 'center';
+      text.textBaseline = 'middle';
+      text.letterSpacing = `${-size * .05}px`;
+      lines.forEach((line, i) => text.fillText(line, width / 2, height * .46 + (i - (lines.length - 1) / 2) * size * .98));
+      const pixels = text.getImageData(0, 0, width, height).data;
+      const targets = [];
+      const step = Math.max(3, Math.round(size / 30));
+      for (let y = 0; y < height; y += step) {
+        for (let x = 0; x < width; x += step) {
+          if (pixels[(y * width + x) * 4 + 3] > 128) targets.push({ x, y });
         }
       }
-
-      const textCanvas = document.createElement('canvas');
-      textCanvas.width = width;
-      textCanvas.height = height;
-      const textContext = textCanvas.getContext('2d');
-      if (!textContext) return;
-      const fontSize = Math.min(92, Math.max(34, width * 0.095));
-      textContext.fillStyle = 'white';
-      textContext.textAlign = 'center';
-      textContext.textBaseline = 'middle';
-      textContext.font = `800 ${fontSize}px "Plus Jakarta Sans", sans-serif`;
-      const lineHeight = fontSize * 0.95;
-      const startY = height * 0.48 - ((renderedLines.length - 1) * lineHeight) / 2;
-      renderedLines.forEach((line, index) => {
-        textContext.fillText(line, width / 2, startY + index * lineHeight);
+      const columns = Math.ceil(width / 20) + 1;
+      const gridCount = columns * (Math.ceil(height / 13) + 1);
+      particles = Array.from({ length: Math.max(gridCount, targets.length) }, (_, i) => {
+        const cell = i < gridCount ? i : Math.floor(Math.random() * gridCount);
+        const x = cell % columns * 20 - 6;
+        const y = Math.floor(cell / columns) * 13 - 1;
+        return { x, y, gx: x, gy: y, vx: 0, vy: 0 };
       });
-
-      const pixels = textContext.getImageData(0, 0, width, height).data;
-      textDots = [];
-      for (let y = 0; y < height; y += 7) {
-        for (let x = 0; x < width; x += 7) {
-          if (pixels[(Math.floor(y) * width + Math.floor(x)) * 4 + 3] > 80) {
-            textDots.push({ x, y });
+      const shuffled = [...particles];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      targets.forEach((target, i) => Object.assign(shuffled[i], {
+        tx: target.x, ty: target.y,
+        delay: .15 + Math.min(.9, Math.hypot(target.x - width / 2, target.y - height * .46) / Math.hypot(width, height)) * 1.1 + Math.random() * .25,
+      }));
+    };
+    const scroll = () => {
+      scatter = Math.min(1, Math.max(0, -host.getBoundingClientRect().top / (window.innerHeight * .7)));
+    };
+    const draw = (now) => {
+      frame = requestAnimationFrame(draw);
+      if (!visible || document.hidden || now - previousFrame < 1000 / 65) return;
+      previousFrame = now;
+      const time = (now - started) / 1000;
+      kick = kick * .93 + Math.abs(scatter - lastScatter) * 6;
+      lastScatter = scatter;
+      ctx.clearRect(0, 0, width, height);
+      light.clearRect(0, 0, width, height);
+      ctx.fillStyle = '#f4f4f6';
+      light.fillStyle = '#3c2cff';
+      for (const p of particles) {
+        const letter = p.tx !== undefined;
+        const age = time - (p.delay || 0);
+        let x = p.gx, y = p.gy, spring = .06, flow = 0;
+        if (letter) {
+          if (age > 0) {
+            const spread = Math.min(1, scatter * (.8 + p.delay * .6));
+            x = p.tx + (p.gx - p.tx) * spread;
+            y = p.ty + (p.gy - p.ty) * spread;
+            spring = Math.min(.09, .02 + age * .08);
           }
+          flow = age > -1 ? Math.max(0, 1 - Math.max(0, age) * 1.4) : 0;
+        }
+        if (kick > .01) flow = Math.max(flow, Math.min(1, kick) * .9);
+        if (motion.matches) {
+          p.x = letter ? p.tx + (p.gx - p.tx) * scatter : p.gx;
+          p.y = letter ? p.ty + (p.gy - p.ty) * scatter : p.gy;
+        } else {
+          let ax = (x - p.x) * spring, ay = (y - p.y) * spring;
+          if (flow > 0) {
+            const angle = (Math.sin(p.x * .004 + time * .7) + Math.cos(p.y * .005 - time * .5) + Math.sin((p.x + p.y) * .002 + time * .3)) * Math.PI;
+            ax += Math.cos(angle) * 2.2 * flow;
+            ay += Math.sin(angle) * 2.2 * flow;
+          }
+          const dx = p.x - mouse.x, dy = p.y - mouse.y;
+          const distance = Math.hypot(dx, dy);
+          if (mouse.on && distance < 120) {
+            const force = (1 - distance / 120) * 6;
+            ax += dx / (distance || 1) * force;
+            ay += dy / (distance || 1) * force;
+          }
+          p.vx = (p.vx + ax) * .82;
+          p.vy = (p.vy + ay) * .82;
+          p.x += p.vx;
+          p.y += p.vy;
+        }
+        const alpha = Math.min(.5, .12 + (Math.abs(p.vx) + Math.abs(p.vy)) * .05);
+        if (letter) {
+          const gathered = motion.matches ? 1 - scatter : Math.min(1, Math.max(0, age * 1.2)) * (1 - scatter);
+          ctx.globalAlpha = (.34 + gathered * .6) * (1 - scatter) + alpha * scatter;
+          const radius = 1 - scatter * .25;
+          ctx.fillRect(p.x - radius, p.y - radius, radius * 2, radius * 2);
+          const sweep = Math.max(0, 1 - Math.abs(p.x / width - (time * .35 % 1.6 - .3)) * 7);
+          light.globalAlpha = (sweep * .9 + (1 - gathered) * .25) * (1 - scatter);
+          if (!motion.matches) light.fillRect(p.x - 2, p.y - 2, 4, 4);
+        } else {
+          ctx.globalAlpha = alpha;
+          ctx.fillRect(p.x - .75, p.y - .75, 1.5, 1.5);
         }
       }
     };
-
-    const draw = (time) => {
-      context.clearRect(0, 0, width, height);
-      const seconds = time / 1000;
-      pointerPosition.x += (pointerTarget.x - pointerPosition.x) * 0.12;
-      pointerPosition.y += (pointerTarget.y - pointerPosition.y) * 0.12;
-
-      dots.forEach((dot) => {
-        const dx = dot.x - pointerPosition.x;
-        const dy = dot.y - pointerPosition.y;
-        const distance = Math.hypot(dx, dy);
-        const influence = Math.max(0, 1 - distance / LENS_RADIUS);
-        const eased = influence * influence;
-        const angle = Math.atan2(dy, dx) + eased * 0.7;
-        const magnification = 1 + eased * 0.65;
-        const x = pointerPosition.x + Math.cos(angle) * distance * magnification;
-        const y = pointerPosition.y + Math.sin(angle) * distance * magnification;
-        const wave = Math.sin(seconds * 1.1 + dot.phase) * 0.3;
-        const radius = DOT_RADIUS + eased * 1.7 + wave;
-        const gradientPosition = Math.max(0, Math.min(1, (x + y) / (width + height)));
-        const red = Math.round(90 + gradientPosition * 100);
-        const blue = Math.round(220 + gradientPosition * 35);
-        const opacity = 0.28 + eased * 0.5;
-
-        context.beginPath();
-        context.arc(x, y, radius, 0, Math.PI * 2);
-        context.fillStyle = `rgba(${red}, 150, ${blue}, ${opacity})`;
-        context.fill();
-      });
-
-      textDots.forEach((dot) => {
-        const dx = dot.x - pointerPosition.x;
-        const dy = dot.y - pointerPosition.y;
-        const distance = Math.hypot(dx, dy);
-        const influence = Math.max(0, 1 - distance / LENS_RADIUS);
-        const eased = influence * influence;
-        const angle = Math.atan2(dy, dx) + eased * 0.7;
-        const magnification = 1 + eased * 0.65;
-        const x = pointerPosition.x + Math.cos(angle) * distance * magnification;
-        const y = pointerPosition.y + Math.sin(angle) * distance * magnification;
-
-        context.beginPath();
-        context.arc(x, y, 1.7 + eased * 1.6, 0, Math.PI * 2);
-        context.fillStyle = `rgba(255, 255, 255, ${0.5 + eased * 0.45})`;
-        context.fill();
-      });
-
-      if (pointerPosition.x > -500) {
-        const glow = context.createRadialGradient(
-          pointerPosition.x, pointerPosition.y, 0,
-          pointerPosition.x, pointerPosition.y, LENS_RADIUS,
-        );
-        glow.addColorStop(0, 'rgba(125, 211, 252, 0.12)');
-        glow.addColorStop(0.55, 'rgba(129, 140, 248, 0.04)');
-        glow.addColorStop(1, 'rgba(129, 140, 248, 0)');
-        context.fillStyle = glow;
-        context.fillRect(
-          pointerPosition.x - LENS_RADIUS,
-          pointerPosition.y - LENS_RADIUS,
-          LENS_RADIUS * 2,
-          LENS_RADIUS * 2,
-        );
-      }
-
-      animationFrame = window.requestAnimationFrame(draw);
+    const move = (event) => {
+      const bounds = host.getBoundingClientRect();
+      Object.assign(mouse, { x: event.clientX - bounds.left, y: event.clientY - bounds.top, on: true });
+      host.style.setProperty('--pointer-x', `${mouse.x}px`);
+      host.style.setProperty('--pointer-y', `${mouse.y}px`);
     };
-
-    const handlePointerMove = (event) => {
-      const bounds = canvas.getBoundingClientRect();
-      pointerTarget = { x: event.clientX - bounds.left, y: event.clientY - bounds.top };
-    };
-
-    const handlePointerLeave = () => {
-      pointerTarget = { x: -1000, y: -1000 };
-    };
-
-    resize();
-    window.addEventListener('resize', resize);
-    window.addEventListener('pointermove', handlePointerMove);
-    window.addEventListener('blur', handlePointerLeave);
-    animationFrame = window.requestAnimationFrame(draw);
-
+    const leave = () => { mouse.on = false; };
+    const observer = new ResizeObserver(() => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => { build(); started = performance.now() - 3000; scroll(); }, 150);
+    });
+    const intersection = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; });
+    document.fonts.ready.then(() => {
+      if (!active) return;
+      build();
+      observer.observe(host);
+      intersection.observe(host);
+      // Observe initial dimensions before starting the gathering animation.
+      startTimer = setTimeout(() => { started = performance.now(); scroll(); frame = requestAnimationFrame(draw); }, 180);
+    });
+    host.addEventListener('pointermove', move);
+    host.addEventListener('pointerleave', leave);
+    window.addEventListener('scroll', scroll, { passive: true, capture: true });
     return () => {
-      window.cancelAnimationFrame(animationFrame);
-      window.removeEventListener('resize', resize);
-      window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('blur', handlePointerLeave);
+      active = false;
+      cancelAnimationFrame(frame);
+      clearTimeout(startTimer);
+      clearTimeout(resizeTimer);
+      observer.disconnect();
+      intersection.disconnect();
+      host.removeEventListener('pointermove', move);
+      host.removeEventListener('pointerleave', leave);
+      window.removeEventListener('scroll', scroll, { capture: true });
     };
-  }, [textLines]);
+  }, []);
 
   return (
-    <canvas
-      ref={canvasRef}
-      aria-hidden="true"
-      className="dot-field"
-    />
+    <div ref={hostRef} className="dot-field">
+      <canvas ref={glowRef} className="dot-field-glow" aria-hidden="true" />
+      <canvas ref={canvasRef} aria-hidden="true" />
+      <div className="dot-field-pointer" aria-hidden="true" />
+      <h1 className="sr-only">{HEADLINE}</h1>
+    </div>
   );
 }

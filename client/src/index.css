@@ -198,30 +198,24 @@ textarea:focus-visible, input:focus-visible { outline: none; }
   z-index: 1;
 }
 
-.hero-heading {
-  color: transparent;
-  user-select: text;
-}
-
-.hero-heading .grad-white,
-.hero-heading .grad-muted {
-  background: none;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
-}
-
+.hero-intro { width: 100%; }
+.hero-intro .status-badge { position: relative; z-index: 1; margin: 24px auto 0; width: fit-content; }
 .dot-field {
-  position: absolute;
-  z-index: 0;
-  top: 3%;
-  left: 0;
+  position: relative;
   width: 100%;
-  height: 66%;
-  pointer-events: none;
-  opacity: 0.9;
-  mask-image: radial-gradient(ellipse 66% 70% at 50% 42%, black 10%, transparent 76%);
-  -webkit-mask-image: radial-gradient(ellipse 66% 70% at 50% 42%, black 10%, transparent 76%);
+  height: clamp(320px, 48vh, 520px);
+  overflow: hidden;
+  color: #f4f4f6;
 }
+.dot-field canvas, .dot-field-pointer { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.dot-field-glow { filter: blur(10px); opacity: .9; mix-blend-mode: screen; }
+.dot-field-pointer {
+  opacity: 0;
+  transition: opacity .5s;
+  background: radial-gradient(260px circle at var(--pointer-x, 50%) var(--pointer-y, 40%), #3c2cff29, transparent 70%);
+}
+.dot-field:hover .dot-field-pointer { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .dot-field-pointer { display: none; } }
 
 .level-option {
   display: flex;

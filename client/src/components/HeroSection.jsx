@@ -42,20 +42,16 @@ export default function HeroSection({ query, setQuery, level, setLevel, onSubmit
 
   return (
     <section className={`hero-section px-4 flex flex-col items-center ${hasResults ? 'pt-7 pb-5' : 'min-h-[calc(100vh-84px)] justify-center'}`}>
-      {!hasResults && <DotField />}
-      {!hasResults && (
+            {!hasResults && (
         <>
-          <div className="hero-content">
+          <div className="hero-content hero-intro">
             <div className="status-badge"><span className="status-dot" /> AI learning companion</div>
-            <h1 className="hero-heading text-center max-w-3xl text-5xl sm:text-6xl font-extrabold leading-tight tracking-[-0.04em] mb-5">
-            <span className="grad-white">Complex ideas.</span><br />
-            <span className="grad-muted">Simply explained.</span>
-            </h1>
+            <DotField />
           </div>
         </>
       )}
 
-      <div className={`hero-content w-full max-w-3xl ${hasResults ? '' : 'mt-24 sm:mt-32'}`}>
+      <div className={`hero-content w-full max-w-3xl ${hasResults ? '' : '-mt-8 sm:-mt-10'}`}>
         <div className="glass-card overflow-hidden">
           <textarea
             ref={inputRef}
