@@ -51,9 +51,6 @@ export default function HeroSection({ query, setQuery, level, setLevel, onSubmit
             <span className="grad-white">Complex ideas.</span><br />
             <span className="grad-muted">Simply explained.</span>
             </h1>
-            <p className="text-center max-w-xl text-base sm:text-lg leading-7 mb-9">
-              Understand anything at your level with a clear explanation, a real-world example, key takeaways, and a quick quiz.
-            </p>
           </div>
         </>
       )}
