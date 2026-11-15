@@ -5,6 +5,7 @@ import ResultsSection from './components/ResultsSection';
 import HistoryDrawer from './components/HistoryDrawer';
 import Toast from './components/Toast';
 import AmbientBackground from './components/AmbientBackground';
+import LearningSections from './components/LearningSections';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -206,6 +207,14 @@ export default function App() {
               showToast={showToast}
             />
           </div>
+        )}
+        {!results && !loading && !error && (
+          <LearningSections onChooseTopic={(topic, selectedLevel) => {
+            setQuery(topic);
+            if (selectedLevel) setLevel(selectedLevel);
+            inputRef.current?.focus({ preventScroll: true });
+            inputRef.current?.closest('section')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' });
+          }} />
         )}
       </main>
       <HistoryDrawer

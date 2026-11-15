@@ -54,7 +54,7 @@ export default function HeroSection({ query, setQuery, level, setLevel, onSubmit
         </div>
       )}
 
-      <section aria-label="Ask a question" className={`relative z-10 px-4 flex flex-col items-center ${hasResults ? 'pt-7 pb-5' : 'pt-10 pb-12 sm:pb-16'}`}>
+      <section id="ask-question" aria-label="Ask a question" className={`relative z-10 px-4 flex flex-col items-center ${hasResults ? 'pt-7 pb-5' : 'pt-10 pb-12 sm:pb-16'}`}>
       <div className="hero-content w-full max-w-3xl">
         <ThinkingInput loading={disabled}>
         <div className="glass-card overflow-hidden">
