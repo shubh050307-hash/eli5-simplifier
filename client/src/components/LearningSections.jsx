@@ -11,7 +11,7 @@ const FAQS = [
   ['What does ELI5 mean?', '“Explain like I’m five.” It means starting with plain language, familiar examples, and the core idea. You don’t need to be five to find that useful.'],
   ['Which explanation level should I choose?', 'Choose ELI5 when a topic is new, Teen for more context and terminology, or Expert for a technical explanation. You can explain the same question again at another level.'],
   ['Can I ask a follow-up question?', 'Yes. After an explanation, use the follow-up input to ask about a detail or request another example. Your current explanation is included as context.'],
-  ['Where can I find my previous explanations?', 'Open Recent in the top bar. Up to 20 explanations are saved in this browser. You can clear them from the history drawer.'],
+  ['Where can I find my previous explanations?', 'Open Recent in the top navigation. Up to 20 explanations are saved in this browser. You can clear them from the history drawer.'],
   ['How can I check what I’ve learned?', 'Each generated explanation includes a knowledge check. Answer the questions, check the explanations, and retry the quiz whenever you like.'],
 ];
 
@@ -49,18 +49,6 @@ export default function LearningSections({ onChooseTopic }) {
         <div className="learning-faq-list">{FAQS.map(([question, answer]) => <details key={question} name="learning-faq"><summary>{question}<ChevronDown size={16} aria-hidden="true" /></summary><p>{answer}</p></details>)}</div>
       </section>
 
-    </div>
-  );
-}
-
-export function LearningFooter({ onChooseTopic }) {
-  return (
-    <div className="learning-home">
-      <footer className="learning-footer">
-        <div><a className="learning-footer-brand" href="#ask-question">ELI5 Simplifier <span aria-hidden="true">↗</span></a><p>Stay curious. Make things click.</p></div>
-        <nav aria-label="Footer"><a href="#how-it-works">How it works</a><a href="#ask-question">Ask a question</a><a href="#faq">FAQ</a></nav>
-        <button type="button" className="secondary-button" onClick={() => onChooseTopic('')}>Ask your own question <ArrowRight size={14} aria-hidden="true" /></button>
-      </footer>
     </div>
   );
 }

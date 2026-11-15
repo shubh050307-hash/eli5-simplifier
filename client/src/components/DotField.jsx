@@ -80,7 +80,8 @@ export default function DotField() {
       const hero = host.closest('.hero-section');
       // Finish gathering before the pinned hero releases into the next section.
       const travel = Math.max(1, track.offsetHeight - hero.offsetHeight);
-      const progress = Math.min(1, Math.max(0, (84 - track.getBoundingClientRect().top) / (travel * .8)));
+      const stickyTop = Number.parseFloat(window.getComputedStyle(hero).top) || 0;
+      const progress = Math.min(1, Math.max(0, (stickyTop - track.getBoundingClientRect().top) / (travel * .8)));
       scatter = motion.matches ? 0 : 1 - progress * progress * (3 - 2 * progress);
     };
     const draw = (now) => {

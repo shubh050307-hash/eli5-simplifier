@@ -5,7 +5,7 @@ import ResultsSection from './components/ResultsSection';
 import HistoryDrawer from './components/HistoryDrawer';
 import Toast from './components/Toast';
 import AmbientBackground from './components/AmbientBackground';
-import LearningSections, { LearningFooter } from './components/LearningSections';
+import LearningSections from './components/LearningSections';
 import HeroIntro from './components/HeroIntro';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
@@ -191,7 +191,10 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#070709] text-[#F4F4F6] relative overflow-x-clip">
       <AmbientBackground mode={ambientMode} loading={loading} />
-      <Navbar onHistoryOpen={() => setHistoryOpen(true)} />
+      <Navbar
+        onHistoryOpen={() => setHistoryOpen(true)}
+        showHomeLinks={!results && !loading && !error}
+      />
       <main className="relative z-10">
         {!results && !loading && !error && <HeroIntro />}
         {!results && !loading && !error && <LearningSections onChooseTopic={prepareQuestion} />}
@@ -207,7 +210,7 @@ export default function App() {
           onClear={() => setQuery('')}
         />
         {(results || loading || error) && (
-          <div ref={resultsRef}>
+          <div ref={resultsRef} className="results-anchor">
             <ResultsSection
               results={results}
               loading={loading}
@@ -221,7 +224,6 @@ export default function App() {
             />
           </div>
         )}
-        {!results && !loading && !error && <LearningFooter onChooseTopic={prepareQuestion} />}
       </main>
       <HistoryDrawer
         open={historyOpen}
