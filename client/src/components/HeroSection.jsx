@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { ArrowRight, Atom, Brain, Dna, Eraser, TrendingUp } from 'lucide-react';
-import DotField from './DotField';
 import ThinkingInput from './thinking-input/ThinkingInput';
 
 const PLACEHOLDERS = [
@@ -43,17 +42,6 @@ export default function HeroSection({ query, setQuery, level, setLevel, onSubmit
 
   return (
     <>
-      {!hasResults && (
-        <div className="hero-scroll-track">
-          <section className="hero-section px-4 flex flex-col items-center min-h-[calc(100vh-84px)] justify-center">
-            <div className="hero-content hero-intro">
-              <div className="status-badge"><span className="status-dot" /> AI learning companion</div>
-              <DotField />
-            </div>
-          </section>
-        </div>
-      )}
-
       <section id="ask-question" aria-label="Ask a question" className={`relative z-10 px-4 flex flex-col items-center ${hasResults ? 'pt-7 pb-5' : 'pt-10 pb-12 sm:pb-16'}`}>
       <div className="hero-content w-full max-w-3xl">
         <ThinkingInput loading={disabled}>

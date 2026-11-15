@@ -1,15 +1,7 @@
 import { useState } from 'react';
-import { ArrowRight, Atom, Brain, ChevronDown, Compass, Globe2, Lightbulb, Orbit, Sprout } from 'lucide-react';
+import { ArrowRight, ChevronDown, Compass, Lightbulb, Orbit } from 'lucide-react';
 import './learning-sections.css';
 
-const TOPICS = [
-  { icon: Orbit, category: 'Space & physics', title: 'A universe of questions.', question: 'Why does time slow down near a black hole?', color: '#a78bfa' },
-  { icon: Brain, category: 'Technology', title: 'Make sense of the machine.', question: 'How does an AI learn from its mistakes?', color: '#38bdf8' },
-  { icon: Sprout, category: 'The natural world', title: 'Small things. Big ideas.', question: 'How do trees communicate with each other?', color: '#34d399' },
-  { icon: Globe2, category: 'Everyday economics', title: 'Understand the bigger picture.', question: 'Why can’t we just print more money?', color: '#fbbf24' },
-  { icon: Atom, category: 'Science', title: 'Follow your curiosity.', question: 'What makes quantum computers different?', color: '#f472b6' },
-  { icon: Lightbulb, category: 'Mind & behavior', title: 'Get to know your own mind.', question: 'Why do we remember some things and forget others?', color: '#fb923c' },
-];
 const LEVELS = [
   { value: 'eli5', label: 'ELI5', caption: 'Start with the big picture', color: '#f59e0b', title: 'A little tug, everywhere.', explanation: 'Gravity is a pull between things. Earth is so big that its pull keeps your feet on the ground. When you drop a ball, that pull brings it back down.', takeaway: 'Think of gravity as an invisible tug between objects.' },
   { value: 'teen', label: 'Teen', caption: 'Connect the ideas', color: '#38bdf8', title: 'Mass creates attraction.', explanation: 'Every object with mass attracts other objects. More mass means a stronger pull, while more distance makes that pull weaker. Earth’s mass is why a dropped ball accelerates toward the ground.', takeaway: 'Double the distance between two masses, and their gravitational force drops to a quarter.' },
@@ -52,20 +44,21 @@ export default function LearningSections({ onChooseTopic }) {
         </div>
       </section>
 
-      <section id="explore" className="learning-section" aria-labelledby="explore-heading">
-        <div className="learning-heading learning-heading-row"><div><span className="section-kicker">Take the scenic route</span><h2 id="explore-heading">What pulls you in?</h2></div><p>Pick a starting point. <br />See where your curiosity takes you.</p></div>
-        <div className="learning-topics">
-          {TOPICS.map(({ icon: Icon, category, title, question, color }) => <button className="learning-topic" key={category} type="button" onClick={() => onChooseTopic(question)} style={{ '--topic-color': color }}><div className="learning-topic-top"><span className="learning-topic-icon"><Icon size={20} strokeWidth={1.5} aria-hidden="true" /></span><ArrowRight className="learning-topic-arrow" size={17} aria-hidden="true" /></div><span className="learning-topic-category">{category}</span><h3>{title}</h3><p>{question}</p><span className="learning-topic-action">Explore this question <ArrowRight size={12} aria-hidden="true" /></span></button>)}
-        </div>
-      </section>
-
       <section id="faq" className="learning-section learning-faq" aria-labelledby="faq-heading">
         <div className="learning-heading"><span className="section-kicker">Before you dive in</span><h2 id="faq-heading">A few good questions.</h2><p>The small details, explained simply.</p><Compass className="learning-faq-compass" size={68} strokeWidth={.7} aria-hidden="true" /></div>
         <div className="learning-faq-list">{FAQS.map(([question, answer]) => <details key={question} name="learning-faq"><summary>{question}<ChevronDown size={16} aria-hidden="true" /></summary><p>{answer}</p></details>)}</div>
       </section>
+
+    </div>
+  );
+}
+
+export function LearningFooter({ onChooseTopic }) {
+  return (
+    <div className="learning-home">
       <footer className="learning-footer">
         <div><a className="learning-footer-brand" href="#ask-question">ELI5 Simplifier <span aria-hidden="true">↗</span></a><p>Stay curious. Make things click.</p></div>
-        <nav aria-label="Footer"><a href="#how-it-works">How it works</a><a href="#explore">Explore</a><a href="#faq">FAQ</a></nav>
+        <nav aria-label="Footer"><a href="#how-it-works">How it works</a><a href="#ask-question">Ask a question</a><a href="#faq">FAQ</a></nav>
         <button type="button" className="secondary-button" onClick={() => onChooseTopic('')}>Ask your own question <ArrowRight size={14} aria-hidden="true" /></button>
       </footer>
     </div>
