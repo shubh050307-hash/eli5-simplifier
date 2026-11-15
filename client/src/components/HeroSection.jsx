@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ArrowRight, Atom, Brain, Dna, Eraser, TrendingUp } from 'lucide-react';
 import DotField from './DotField';
+import ThinkingInput from './thinking-input/ThinkingInput';
 
 const PLACEHOLDERS = [
   'Explain how transformer models work...',
@@ -55,6 +56,7 @@ export default function HeroSection({ query, setQuery, level, setLevel, onSubmit
 
       <section aria-label="Ask a question" className={`relative z-10 px-4 flex flex-col items-center ${hasResults ? 'pt-7 pb-5' : 'pt-10 pb-12 sm:pb-16'}`}>
       <div className="hero-content w-full max-w-3xl">
+        <ThinkingInput loading={disabled}>
         <div className="glass-card overflow-hidden">
           <textarea
             ref={inputRef}
@@ -98,6 +100,7 @@ export default function HeroSection({ query, setQuery, level, setLevel, onSubmit
             </div>
           </div>
         </div>
+        </ThinkingInput>
         {!hasResults && <p className="text-center text-[11px] text-[#52525B] mt-3">Choose a level above · Press Enter to explain</p>}
       </div>
 
