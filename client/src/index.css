@@ -164,29 +164,6 @@ textarea:focus-visible, input:focus-visible { outline: none; }
   background-clip: text;
 }
 
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 28px;
-  padding: 7px 14px;
-  border: 1px solid rgba(255,255,255,.1);
-  border-radius: 999px;
-  color: var(--text-secondary);
-  background: rgba(18,18,24,.6);
-  font: 10px var(--font-mono);
-  letter-spacing: .12em;
-  text-transform: uppercase;
-}
-
-.status-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--emerald);
-  box-shadow: 0 0 12px rgba(16,185,129,.8);
-}
-
 .hero-section {
   position: relative;
   isolation: isolate;
@@ -199,7 +176,6 @@ textarea:focus-visible, input:focus-visible { outline: none; }
 }
 
 .hero-intro { width: 100%; }
-.hero-intro .status-badge { position: relative; z-index: 1; margin: 24px auto 0; width: fit-content; }
 .dot-field {
   position: relative;
   width: 100%;
