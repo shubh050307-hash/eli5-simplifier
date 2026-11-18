@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowRight, ChevronDown, Compass, Lightbulb, Orbit } from 'lucide-react';
+import { ArrowRight, ChevronDown, Lightbulb, Orbit } from 'lucide-react';
 import './learning-sections.css';
 
 const LEVELS = [
@@ -45,7 +45,7 @@ export default function LearningSections({ onChooseTopic }) {
       </section>
 
       <section id="faq" className="learning-section learning-faq" aria-labelledby="faq-heading">
-        <div className="learning-heading"><span className="section-kicker">Before you dive in</span><h2 id="faq-heading">A few good questions.</h2><p>The small details, explained simply.</p><Compass className="learning-faq-compass" size={68} strokeWidth={.7} aria-hidden="true" /></div>
+        <div className="learning-heading"><span className="section-kicker">Before you dive in</span><h2 id="faq-heading">A few good questions.</h2><p>The small details, explained simply.</p></div>
         <div className="learning-faq-list">{FAQS.map(([question, answer]) => <details key={question} name="learning-faq"><summary>{question}<ChevronDown size={16} aria-hidden="true" /></summary><p>{answer}</p></details>)}</div>
       </section>
 

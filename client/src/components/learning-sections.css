@@ -36,7 +36,6 @@
 .learning-text-link { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; padding: 15px 0 0; border: 0; border-top: 1px solid var(--border); background: transparent; color: var(--text-primary); font: 12px var(--font-body); cursor: pointer; text-align: left; }
 .learning-text-link:hover { color: var(--example-color); }
 .learning-faq { display: grid; grid-template-columns: .85fr 1.15fr; gap: 70px; }
-.learning-faq-compass { color: #646472; margin-top: 28px; }
 .learning-faq-list details { border-bottom: 1px solid var(--border); }
 .learning-faq-list summary { display: flex; align-items: center; justify-content: space-between; gap: 22px; padding: 23px 0; list-style: none; cursor: pointer; color: #dddde5; font-size: 13px; line-height: 1.6; }
 .learning-faq-list summary::-webkit-details-marker { display: none; }
@@ -100,7 +99,6 @@
   .learning-example { padding: 22px; }
   .learning-example-copy { min-height: 0; }
   .learning-example-copy > p { min-height: 0; }
-  .learning-faq-compass { display: none; }
   .site-navbar { align-items: flex-start; gap: 24px; }
 }
 @media (prefers-reduced-motion: reduce) {
