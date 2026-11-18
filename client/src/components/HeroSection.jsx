@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ArrowRight, Atom, Brain, Dna, Eraser, TrendingUp } from 'lucide-react';
 import ThinkingInput from './thinking-input/ThinkingInput';
+import './shiny-explain-button.css';
 
 const PLACEHOLDERS = [
   'Explain how transformer models work...',
@@ -75,8 +76,8 @@ export default function HeroSection({ query, setQuery, level, setLevel, onSubmit
             <div className="flex items-center gap-2 ml-auto">
               {query && <button type="button" className="icon-button" onClick={onClear} title="Clear input"><Eraser size={14} /></button>}
               <span className="text-[10px] font-mono text-[#52525B]">{query.length}/5000</span>
-              <button type="button" onClick={() => onSubmit()} disabled={disabled || !query.trim()} className="primary-button">
-                {disabled ? 'Thinking…' : 'Explain'} <ArrowRight size={14} />
+              <button type="button" onClick={() => onSubmit()} disabled={disabled || !query.trim()} className="shiny-explain-button">
+                <span>{disabled ? 'Thinking…' : 'Explain'} <ArrowRight size={14} aria-hidden="true" /></span>
               </button>
             </div>
           </div>
