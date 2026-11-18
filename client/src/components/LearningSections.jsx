@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { ArrowRight, ChevronDown, Lightbulb, Orbit } from 'lucide-react';
 import './learning-sections.css';
 
@@ -15,7 +15,7 @@ const FAQS = [
   ['How can I check what I’ve learned?', 'Each generated explanation includes a knowledge check. Answer the questions, check the explanations, and retry the quiz whenever you like.'],
 ];
 
-export default function LearningSections({ onChooseTopic }) {
+function LearningSections({ onChooseTopic }) {
   const [selectedLevel, setSelectedLevel] = useState('eli5');
   const example = LEVELS.find(item => item.value === selectedLevel);
 
@@ -52,3 +52,5 @@ export default function LearningSections({ onChooseTopic }) {
     </div>
   );
 }
+
+export default memo(LearningSections);

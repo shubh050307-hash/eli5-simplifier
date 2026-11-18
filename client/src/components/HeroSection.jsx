@@ -23,20 +23,13 @@ const LEVELS = [
 ];
 
 export default function HeroSection({ query, setQuery, level, setLevel, onSubmit, inputRef, hasResults, disabled, onClear }) {
-  const [placeholder, setPlaceholder] = useState('');
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const placeholder = PLACEHOLDERS[placeholderIndex];
 
   useEffect(() => {
-    const target = PLACEHOLDERS[placeholderIndex];
-    let index = 0;
     const timer = window.setInterval(() => {
-      index += 1;
-      setPlaceholder(target.slice(0, index));
-      if (index >= target.length) {
-        window.clearInterval(timer);
-        window.setTimeout(() => setPlaceholderIndex(current => (current + 1) % PLACEHOLDERS.length), 2200);
-      }
-    }, 35);
+      setPlaceholderIndex(current => (current + 1) % PLACEHOLDERS.length);
+    }, 5000);
     return () => window.clearInterval(timer);
   }, [placeholderIndex]);
 

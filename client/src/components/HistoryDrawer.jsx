@@ -1,10 +1,11 @@
+import { memo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Clock, Trash2, X, Download } from 'lucide-react';
 import { formatTimeAgo, exportAsMarkdown, downloadMarkdown } from '../lib/utils';
 
 const LEVEL_LABELS = { eli5: 'ELI5', teen: 'Teen', expert: 'Expert' };
 
-export default function HistoryDrawer({ open, onClose, history, onLoad, onClear }) {
+function HistoryDrawer({ open, onClose, history, onLoad, onClear }) {
   const handleExport = (entry) => {
     const md = exportAsMarkdown(entry.query, entry);
     const filename = (entry.query || 'explanation').slice(0, 30).replace(/\s+/g, '-').toLowerCase();
@@ -141,3 +142,5 @@ export default function HistoryDrawer({ open, onClose, history, onLoad, onClear 
     </AnimatePresence>
   );
 }
+
+export default memo(HistoryDrawer);

@@ -1,10 +1,10 @@
-import { useLayoutEffect, useRef } from 'react';
+import { memo, useLayoutEffect, useRef } from 'react';
 import { Clock } from 'lucide-react';
 import { LiquidNavbar } from './liquid-navbar/LiquidNavbar';
 import './learning-sections.css';
 import './liquid-navbar/liquid-navbar-theme.css';
 
-export default function Navbar({ onHistoryOpen, showHomeLinks }) {
+function Navbar({ onHistoryOpen, showHomeLinks }) {
   const headerRef = useRef(null);
 
   useLayoutEffect(() => {
@@ -54,3 +54,5 @@ export default function Navbar({ onHistoryOpen, showHomeLinks }) {
     </header>
   );
 }
+
+export default memo(Navbar);

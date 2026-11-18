@@ -1,6 +1,7 @@
+import { memo } from 'react';
 import DotField from './DotField';
 
-export default function HeroIntro() {
+function HeroIntro() {
   return (
     <div className="hero-scroll-track">
       <section className="hero-section px-4 flex flex-col items-center min-h-screen justify-center">
@@ -11,3 +12,5 @@ export default function HeroIntro() {
     </div>
   );
 }
+
+export default memo(HeroIntro);

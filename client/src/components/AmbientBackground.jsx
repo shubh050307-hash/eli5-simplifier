@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 const MODE_COLORS = {
   idle:    'rgba(120,119,198,0.10)',
   loading: 'rgba(120,119,198,0.20)',
@@ -6,7 +8,7 @@ const MODE_COLORS = {
   expert:  'rgba(16,185,129,0.09)',
 };
 
-export default function AmbientBackground({ mode, loading }) {
+function AmbientBackground({ mode, loading }) {
   const color = loading ? MODE_COLORS.loading : (MODE_COLORS[mode] || MODE_COLORS.idle);
   return (
     <div style={{ position:'fixed', inset:0, zIndex:0, overflow:'hidden', pointerEvents:'none' }}>
@@ -51,3 +53,5 @@ export default function AmbientBackground({ mode, loading }) {
     </div>
   );
 }
+
+export default memo(AmbientBackground);

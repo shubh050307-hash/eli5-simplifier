@@ -115,6 +115,33 @@ export default function App() {
     window.setTimeout(() => inputRef.current?.focus(), 50);
   }, []);
 
+  const openHistory = useCallback(() => setHistoryOpen(true), []);
+  const closeHistory = useCallback(() => setHistoryOpen(false), []);
+  const clearQuery = useCallback(() => setQuery(''), []);
+  const prepareQuestion = useCallback((topic, selectedLevel) => {
+    setQuery(topic);
+    if (selectedLevel) setLevel(selectedLevel);
+    inputRef.current?.focus({ preventScroll: true });
+    inputRef.current?.closest('section')?.scrollIntoView({
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
+      block: 'start',
+    });
+  }, []);
+
+  const loadHistoryEntry = useCallback((entry) => {
+    const normalizedEntry = normalizeHistoryEntry(entry);
+    setQuery(normalizedEntry.query || '');
+    setLevel(normalizedEntry.level);
+    setResults(normalizedEntry);
+    setError(null);
+    setHistoryOpen(false);
+    setAmbientMode(normalizedEntry.level);
+  }, []);
+  const clearHistory = useCallback(() => {
+    setHistory([]);
+    localStorage.removeItem('eli5_history');
+  }, []);
+
   const handleFollowUp = useCallback(async (question) => {
     if (!results || !question.trim()) {
       showToast('Enter a follow-up question first.', 'error');
@@ -178,21 +205,11 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
 
-  const prepareQuestion = (topic, selectedLevel) => {
-    setQuery(topic);
-    if (selectedLevel) setLevel(selectedLevel);
-    inputRef.current?.focus({ preventScroll: true });
-    inputRef.current?.closest('section')?.scrollIntoView({
-      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
-      block: 'start',
-    });
-  };
-
   return (
     <div className="min-h-screen bg-[#070709] text-[#F4F4F6] relative overflow-x-clip">
       <AmbientBackground mode={ambientMode} loading={loading} />
       <Navbar
-        onHistoryOpen={() => setHistoryOpen(true)}
+        onHistoryOpen={openHistory}
         showHomeLinks={!results && !loading && !error}
       />
       <main className="relative z-10">
@@ -207,7 +224,7 @@ export default function App() {
           inputRef={inputRef}
           hasResults={Boolean(results || loading || error)}
           disabled={loading}
-          onClear={() => setQuery('')}
+          onClear={clearQuery}
         />
         {(results || loading || error) && (
           <div ref={resultsRef} className="results-anchor">
@@ -227,21 +244,10 @@ export default function App() {
       </main>
       <HistoryDrawer
         open={historyOpen}
-        onClose={() => setHistoryOpen(false)}
+        onClose={closeHistory}
         history={history}
-        onLoad={(entry) => {
-          const normalizedEntry = normalizeHistoryEntry(entry);
-          setQuery(normalizedEntry.query || '');
-          setLevel(normalizedEntry.level);
-          setResults(normalizedEntry);
-          setError(null);
-          setHistoryOpen(false);
-          setAmbientMode(normalizedEntry.level);
-        }}
-        onClear={() => {
-          setHistory([]);
-          localStorage.removeItem('eli5_history');
-        }}
+        onLoad={loadHistoryEntry}
+        onClear={clearHistory}
       />
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
